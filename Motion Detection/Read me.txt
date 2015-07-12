@@ -1,0 +1,1 @@
+As I Initally performed my motion detection on matlab and updated the code, later I shifted the process on C to implement on DSP board. This is a report that works on DSP board but you can find the concept behind this.
