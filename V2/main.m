@@ -1,4 +1,4 @@
-    clc;
+clc;
 clear all;
 close all;
 
@@ -65,12 +65,12 @@ blur_index = 6;
 blur_flag = false;
 
 %% brutal force
-% disp('brutal')
-% tic
-% %blur_flag = false;
-% [e,f] = BrutalMovDetector(p1,p2,seg_num,blur_flag,blur_index);
-% figure(3)
-% ImagePlot(p1,seg_num,e,f);
+ disp('brutal')
+ tic
+ blur_flag = false;
+ [e,f] = BrutalMovDetector(p1,p2,seg_num,blur_flag,blur_index);
+ figure(3)
+ ImagePlot(p1,seg_num,e,f);
 
 
 pixel(:,:,1) = p1;
@@ -108,10 +108,11 @@ end
 
 
 
-gt = load('gt.mat');
-gt_x = gt.e;
-gt_y = gt.f;
-ImagePlot(p1,seg_num,gt_x,gt_y);
+%gt = load('gt.mat');
+%gt_x = gt.e;
+%gt_y = gt.f;
+%figure(3)
+%ImagePlot(p1,seg_num,gt_x,gt_y);
 
 disp('Normal HEXBS')
 [hex_x, hex_y] = HexMovDetector(p1,p2,seg_num,blur_flag,blur_index);
