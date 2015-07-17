@@ -1,4 +1,4 @@
-function [res_r,res_c] = HexMovDetector( pixel1, pixel2,seg_num, BlurFlag,blur_index, thres)
+function [res_r,res_c] = HexMovDetector( pixel1, pixel2,seg_num, BlurFlag,blur_index, thres )
 %MOVDETECTOR Summary of this function goes here
 %   Detailed explanation goes here
 % input args is the two frames and the blur flag
@@ -7,9 +7,8 @@ function [res_r,res_c] = HexMovDetector( pixel1, pixel2,seg_num, BlurFlag,blur_i
     %  parameters
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    %likelyhood_thres = 10; % under thres, the two segments are the same
+    likelyhood_thres = thres; % under thres, the two segments are the same
                            % used in MAD
-    likelyhood_thres = thres;                 
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -45,7 +44,6 @@ function [res_r,res_c] = HexMovDetector( pixel1, pixel2,seg_num, BlurFlag,blur_i
         end   
     end
     
-        
     for m = 1:rows
 %     for m = 2:2
         for n = 1:cols
@@ -85,9 +83,6 @@ function [res_r,res_c] = HexMovDetector( pixel1, pixel2,seg_num, BlurFlag,blur_i
                 optflag = 0;
 
                 while optflag == 0
-                    clear v;
-                    clear x;
-                    clear y;
 
                     %%% the big pattern search
                     para_pos(1).r = center_pos.r;
@@ -113,17 +108,13 @@ function [res_r,res_c] = HexMovDetector( pixel1, pixel2,seg_num, BlurFlag,blur_i
                             position.dx = center_pos.r;
                             position.dy = center_pos.c;
                             diff = MAD(test_seg, pixel_n, position,num, likelyhood_thres);
-                            v(i).v = diff.value;
-                            v(i).x = position.dx;
-                            v(i).y = position.dy;
+                            v(i) = diff.value;
                         else
                             j = i-1;
                             position.dx = para_pos(j).r;
                             position.dy = para_pos(j).c;
                             diff = MAD(test_seg, pixel_n, position,num, likelyhood_thres);
-                            v(i).v = diff.value;
-                            v(i).x = position.dx;
-                            v(i).y = position.dy;
+                            v(i) = diff.value;
                         end
                     end
                     
@@ -141,7 +132,7 @@ function [res_r,res_c] = HexMovDetector( pixel1, pixel2,seg_num, BlurFlag,blur_i
                         clear v;
                         clear x;
                         clear y;
-                        %{
+
                         sub_pos(1).r = center_pos.r;
                         sub_pos(1).c = center_pos.c + 1;
                         
@@ -153,42 +144,13 @@ function [res_r,res_c] = HexMovDetector( pixel1, pixel2,seg_num, BlurFlag,blur_i
                         
                         sub_pos(4).r = center_pos.r + 1;
                         sub_pos(4).c = center_pos.c;
-                        %}
-                        
-                        %%% using all 9 points instead of 5 points
-                        sub_pos(1).r = center_pos.r;
-                        sub_pos(1).c = center_pos.c + 1;
-                        
-                        sub_pos(2).r = center_pos.r + 1;
-                        sub_pos(2).c = center_pos.c + 1;
-                        
-                        sub_pos(3).r = center_pos.r + 1;
-                        sub_pos(3).c = center_pos.c;
-                        
-                        sub_pos(4).r = center_pos.r + 1;
-                        sub_pos(4).c = center_pos.c - 1;
-                        
-                        sub_pos(5).r = center_pos.r;
-                        sub_pos(5).c = center_pos.c - 1;
-                        
-                        sub_pos(6).r = center_pos.r - 1;
-                        sub_pos(6).c = center_pos.c - 1;
-                        
-                        sub_pos(7).r = center_pos.r - 1;
-                        sub_pos(7).c = center_pos.c;
-                        
-                        sub_pos(8).r = center_pos.r - 1;
-                        sub_pos(8).c = center_pos.c + 1;
-                        
 
-                        for i = 1:9
+                        for i = 1:5
                             if(i == 1)
                                 position.dx = center_pos.r;
                                 position.dy = center_pos.c;
                                 diff = MAD(test_seg, pixel_n, position,num, likelyhood_thres);
-                                v(i).v = diff.value;
-                                v(i).x = position.dx;
-                                v(i).y = position.dy;
+                                v(i) = diff.value;
                                 x(i) = diff.row;
                                 y(i) = diff.col; 
                             else
@@ -196,9 +158,7 @@ function [res_r,res_c] = HexMovDetector( pixel1, pixel2,seg_num, BlurFlag,blur_i
                                 position.dx = sub_pos(j).r;
                                 position.dy = sub_pos(j).c;
                                 diff = MAD(test_seg, pixel_n, position,num, likelyhood_thres);
-                                v(i).v = diff.value;
-                                v(i).x = position.dx;
-                                v(i).y = position.dy;
+                                v(i) = diff.value;
                                 x(i) = diff.row;
                                 y(i) = diff.col;
                             end

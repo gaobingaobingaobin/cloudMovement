@@ -1,4 +1,5 @@
-function [ res_r, res_c ] = BrutalMovDetector( pixel1, pixel2, seg_num, BlurFlag, blur_index, debug_mode, thres)
+function [ opt_r, opt_c, v ] = BrutalMovDetectorDebug( pixel1, pixel2, seg_num, ...
+    BlurFlag, blur_index, debug_mode, thres, probe_row, probe_col)
 %BRUTALMOVDETECTOR Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -51,17 +52,14 @@ function [ res_r, res_c ] = BrutalMovDetector( pixel1, pixel2, seg_num, BlurFlag
         end   
     end
     
-    msg = sprintf('Finish loading two images, start computing ... \n');
-    disp(msg);
-    msg = sprintf('Num of rows: %d, num of cols: %d, num of segments: %d\n',rows, cols, rows*cols);
-    disp(msg);
+
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%% search every possible position and find optima %%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    for i = 1:rows
-        for j = 1:cols
+    for i = probe_row:probe_row
+        for j = probe_col:probe_col
          
             position.segr = i;
             position.segc = j;

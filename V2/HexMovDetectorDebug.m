@@ -1,4 +1,5 @@
-function [res_r,res_c] = HexMovDetector( pixel1, pixel2,seg_num, BlurFlag,blur_index, thres)
+function [opt_r,opt_c,vv] = HexMovDetectorDebug( pixel1, pixel2,seg_num,...
+ BlurFlag,blur_index, thres, probe_r, probe_c, gt_v)
 %MOVDETECTOR Summary of this function goes here
 %   Detailed explanation goes here
 % input args is the two frames and the blur flag
@@ -11,6 +12,11 @@ function [res_r,res_c] = HexMovDetector( pixel1, pixel2,seg_num, BlurFlag,blur_i
                            % used in MAD
     likelyhood_thres = thres;                 
     
+    gt_value = gt_v;
+    vv = zeros(91,91);
+    vv = vv - 1;
+    vv_center_r = 41;
+    vv_center_c = 41;
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %for each frame, segment as 20 by 20 small blocks%
@@ -46,9 +52,9 @@ function [res_r,res_c] = HexMovDetector( pixel1, pixel2,seg_num, BlurFlag,blur_i
     end
     
         
-    for m = 1:rows
+    for m = probe_r:probe_r
 %     for m = 2:2
-        for n = 1:cols
+        for n = probe_c:probe_c
 %         for n = 6:6
             position.segr = m;
             position.segc = n;
@@ -116,6 +122,10 @@ function [res_r,res_c] = HexMovDetector( pixel1, pixel2,seg_num, BlurFlag,blur_i
                             v(i).v = diff.value;
                             v(i).x = position.dx;
                             v(i).y = position.dy;
+                            % record MAD of that position
+                            vv_r = vv_center_r + center_pos.r;
+                            vv_c = vv_center_c + center_pos.c;
+                            vv(vv_r, vv_c) = v(i).v;
                         else
                             j = i-1;
                             position.dx = para_pos(j).r;
@@ -124,6 +134,10 @@ function [res_r,res_c] = HexMovDetector( pixel1, pixel2,seg_num, BlurFlag,blur_i
                             v(i).v = diff.value;
                             v(i).x = position.dx;
                             v(i).y = position.dy;
+                            % record MAD of that position
+                            vv_r = vv_center_r + position.dx;
+                            vv_c = vv_center_c + position.dy;
+                            vv(vv_r, vv_c) = v(i).v;
                         end
                     end
                     
@@ -141,6 +155,7 @@ function [res_r,res_c] = HexMovDetector( pixel1, pixel2,seg_num, BlurFlag,blur_i
                         clear v;
                         clear x;
                         clear y;
+
                         %{
                         sub_pos(1).r = center_pos.r;
                         sub_pos(1).c = center_pos.c + 1;
@@ -190,7 +205,11 @@ function [res_r,res_c] = HexMovDetector( pixel1, pixel2,seg_num, BlurFlag,blur_i
                                 v(i).x = position.dx;
                                 v(i).y = position.dy;
                                 x(i) = diff.row;
-                                y(i) = diff.col; 
+                                y(i) = diff.col;
+                                % record MAD of that position
+                                vv_r = vv_center_r + center_pos.r;
+                                vv_c = vv_center_c + center_pos.c;
+                                vv(vv_r, vv_c) = v(i).v;
                             else
                                 j = i-1;
                                 position.dx = sub_pos(j).r;
@@ -201,6 +220,10 @@ function [res_r,res_c] = HexMovDetector( pixel1, pixel2,seg_num, BlurFlag,blur_i
                                 v(i).y = position.dy;
                                 x(i) = diff.row;
                                 y(i) = diff.col;
+                                % record MAD of that position
+                                vv_r = vv_center_r + position.dx;
+                                vv_c = vv_center_c + position.dy;
+                                vv(vv_r, vv_c) = v(i).v;
                             end
                         end
                         %%%% locate the optimal solution %%%%%%%%

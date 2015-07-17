@@ -1,4 +1,5 @@
-function [] = ImagePlot( image, seg_num, x_vector, y_vector )
+function [] = ImagePlotSuper( image1, image2, seg_num, x_vector, y_vector )
+
 %IMAGEPLOT Summary of this function goes here
 %   Detailed explanation goes here
 % image is the picture that you want to show
@@ -6,16 +7,32 @@ function [] = ImagePlot( image, seg_num, x_vector, y_vector )
 % image size is 360*600 we can use seg_num = 20, 30, 40, 60, etc.
 % x_vector and y_vector are the x and y of the motion vector
 
-rgb = image;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%% Show Two Images in Superposition %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+rgb1 = image1;
 a = x_vector;
 b = y_vector;
-% subplot(1,2,1);
-imshow(rgb)
+% imshow(rgb1);
+% hold on;
+% 
+% rgb2 = image2;
+% a = x_vector;
+% b = y_vector;
+% imshow(rgb2);
+% hold on;
 
+C = imfuse(image1,image2,'blend','Scaling','joint');
+imshow(C);
 hold on;
 
-M = size(rgb,1);
-N = size(rgb,2);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Print the motion vector onto the Image %%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+M = size(rgb1,1);
+N = size(rgb1,2);
 
 for k = 1:seg_num:M
     x = [1 N];

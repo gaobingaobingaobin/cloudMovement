@@ -1,76 +1,124 @@
 clc;
-clear all;
+clear;
 close all;
 
 
-%%%%% video process%%%%%%%%%%%
-% info=aviinfo('test.avi');
-% width = info.Width;
-% height = info.Height;
-% nframes = info.NumFrames;
-% 
-% IM=uint8(zeros(height,width,3,nframes));
-% 
-% 
-% video = aviread('test.avi');
-% 
-% for i=1:nframes
-%     IM(:,:,:,i)=video(i).cdata;
-% end
-% 
-% clear avi;
-% 
-% for f = 1:nframes
-%     pixel(:,:,f) = (rgb2gray(IM(:,:,:,f)));  
-% end
-% 
-% blur_flag = true;
-% blur_index = 5;
-% seg_num = 20;
-% [res_r, res_c] = BrutalMovDetector(pixel(:,:,1),pixel(:,:,7),seg_num,false,blur_index);
-% [a, b] = HexMovDetector(pixel(:,:,1),pixel(:,:,7),seg_num,blur_flag,blur_index);
-% % res_r - a
-% 
-% figure(1)
-% ImagePlot(pixel(:,:,1),seg_num,a,b);
-% figure(2)
-% ImagePlot(pixel(:,:,1),seg_num,res_r,res_c);
-
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%initialize rbg picture%%%%%%%%%%%%%%%%%%%%%%%%%
+pic1 = imread('f1.jpg');
+pic2 = imread('f2.jpg');
+svmStruct = load ('svmStruct.mat');
+seg_num = 40;
+seg = InitCol(pic1,pic2,seg_num);
+seg_index=320;
+feature=clssify(seg,seg_num,seg_index);
+CloudLabel = svmclassify(svmStruct.svmStruct,feature);
+%load cloud;
+%CloudLabel = cloud';
 %%%%%%% picture process%%%%%%%%%%%
 p1 = imread('f1.jpg');
+%p1 = imread('pseudo_f1.jpg');
 p1 = rgb2gray(p1);
 
 p2 = imread('f2.jpg');
+%p2 = imread('pseudo_f2.jpg');
+%p2 = imread('pseudo_f2_large_move.jpg');
 p2 = rgb2gray(p2);
 % 
 % p3 = imread('f3.jpg');
 % p3 = rgb2gray(p3);
 % 
 
-figure(1)
+subplot(3,1,1);
 v1 = zeros(10,16);
 v2 = zeros(10,16);
 ImagePlot(p1,40,v1,v2);
 
-figure(2)
+subplot(3,1,2);
 v1 = zeros(10,16);
 v2 = zeros(10,16);
 ImagePlot(p2,40,v1,v2);
+
+subplot(3,1,3);
+ImagePlotSuper(p1, p2,40,v1,v2);
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%% find the center of two balls %%%%%%%%%%%%%%%
+%%%%%% only work for pic that is just a ball %%%%%%
+%%%%%% for debug %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% [center_r1, center_c1] = findBallCenter(p1);
+% [center_r2, center_c2] = findBallCenter(p2);
 
 
 seg_num = 40;
 blur_index = 6;
 blur_flag = false;
+debug_mode = false;
+likelyhood_thres = 10;
 
-%% brutal force
- disp('brutal')
- tic
- blur_flag = false;
- [e,f] = BrutalMovDetector(p1,p2,seg_num,blur_flag,blur_index);
- figure(3)
- ImagePlot(p1,seg_num,e,f);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%% Algorithm1. Brutal Force %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+disp('brutal')
+tic
+blur_flag = false;
+[gt_r,gt_c] = BrutalMovDetector(p1,p2,seg_num,blur_flag,blur_index, debug_mode, likelyhood_thres);
+[gt_r,gt_c] = CloudDetect(gt_r,gt_c,CloudLabel);
+figure(3)
+ImagePlotSuper(p1, p2,seg_num,gt_r,gt_c);
+%gt_data.gt_r = gt_r;
+%gt_data.gt_c = gt_c;
+%save('gt_data.mat','gt_data');
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% blurring is not good for edges movement detection, the movement vector
+% trends to leanning to the blurring diffusion direction (gradient)
+% Therefore, we might be solve the problem as followings:
+% 1. sharpen or do nothing to the segment that has edges
+% 2. blur segment without/few edges
+% needs to be implemented and verified
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%{
+blur_flag = true;
+[e,f] = BrutalMovDetector(p1,p2,seg_num,blur_flag,blur_index, debug_mode, likelyhood_thres);
+figure(4)
+ImagePlotSuper(p1, p2,seg_num,e,f);
+%}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%% Algorithm2. Hex Based Algorithm %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%{
+gt = load('gt_data.mat');
+gt_r = gt.gt_data.gt_r;
+gt_c = gt.gt_data.gt_c;
+figure;
+ImagePlot(p1,seg_num,gt_r,gt_c);
+%}
+disp('Normal HEXBS')
+[hex_r, hex_c] = HexMovDetector(p1,p2,seg_num,blur_flag,blur_index,likelyhood_thres);
+figure;
+ImagePlot(p1,seg_num,hex_r,hex_c);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%  Error between GT and hexbs
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+error_analysis
+
+
+
+
+
 
 
 pixel(:,:,1) = p1;
@@ -108,16 +156,7 @@ end
 
 
 
-%gt = load('gt.mat');
-%gt_x = gt.e;
-%gt_y = gt.f;
-%figure(3)
-%ImagePlot(p1,seg_num,gt_x,gt_y);
 
-disp('Normal HEXBS')
-[hex_x, hex_y] = HexMovDetector(p1,p2,seg_num,blur_flag,blur_index);
-figure(4)
-ImagePlot(p1,seg_num,hex_x,hex_y);
 
 disp('SA')
 %[hexsa_x, hexsa_y] = HexMovDetectorSA(p1,p2,seg_num,false,blur_index);
@@ -207,5 +246,6 @@ mean(angle_hexsa)
 % length(find(cor2>0))/length(cor2)
 % mean(abs(cor1))
 % mean(abs(cor2))
+
 
 
