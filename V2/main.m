@@ -9,12 +9,14 @@ pic1 = imread('f1.jpg');
 pic2 = imread('f2.jpg');
 svmStruct = load ('svmStruct.mat');
 seg_num = 40;
-seg = InitCol(pic1,pic2,seg_num);
+%seg = InitCol(pic1,pic2,seg_num);
 seg_index=320;
-feature=clssify(seg,seg_num,seg_index);
-CloudLabel = svmclassify(svmStruct.svmStruct,feature);
-%load cloud;
-%CloudLabel = cloud';
+%feature=clssify(seg,seg_num,seg_index);
+%CloudLabel = svmclassify(svmStruct.svmStruct,feature);
+load cloud;%%debug
+CloudLabel = cloud';%%debug
+
+
 %%%%%%% picture process%%%%%%%%%%%
 p1 = imread('f1.jpg');
 %p1 = imread('pseudo_f1.jpg');
@@ -68,8 +70,17 @@ likelyhood_thres = 10;
 disp('brutal')
 tic
 blur_flag = false;
-[gt_r,gt_c] = BrutalMovDetector(p1,p2,seg_num,blur_flag,blur_index, debug_mode, likelyhood_thres);
-[gt_r,gt_c] = CloudDetect(gt_r,gt_c,CloudLabel);
+%[gt_r,gt_c] = BrutalMovDetector(p1,p2,seg_num,blur_flag,blur_index, debug_mode, likelyhood_thres);
+load gt_c;%%debug
+load gt_r;%%debug
+figure(2)
+ImagePlotSuper(p1, p2,seg_num,gt_r,gt_c);
+num=160;
+while(num~=0)
+    [gt_r,gt_c,num] = CloudDetect(gt_r,gt_c,CloudLabel);
+    %figure(3)
+    %ImagePlotSuper(p1, p2,seg_num,gt_r,gt_c);
+end
 figure(3)
 ImagePlotSuper(p1, p2,seg_num,gt_r,gt_c);
 %gt_data.gt_r = gt_r;
